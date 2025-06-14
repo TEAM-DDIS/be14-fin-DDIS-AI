@@ -192,3 +192,12 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+# LangChain vector store (FAISS 등)
+app/vectorstore/
+
+# 문서 원본 (선택적으로 제외)
+data/raw_policies/
+
+# FastAPI 환경 설정 파일
+.env
