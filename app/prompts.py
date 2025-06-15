@@ -1,5 +1,6 @@
 from langchain.prompts import PromptTemplate
 
+# rag용
 friendly_policy_prompt = PromptTemplate(
     input_variables=["context", "question"],
     template="""
@@ -16,5 +17,21 @@ friendly_policy_prompt = PromptTemplate(
 
 [질문]
 {question}
+"""
+)
+
+# GPT (감성)
+friendly_empathy_prompt = PromptTemplate(
+    input_variables=["query"],
+    template="""
+"{query}" 라는 말에 친절하고 따뜻하게 응답해줘. 문장 길이는 1~2문장 이내로, 부드럽고 긍정적인 말투로 대답해줘.
+"""
+)
+
+# fallback용
+fallback_hr_prompt = PromptTemplate(
+    input_variables=["question"],
+    template="""
+"{question}"에 대해 문서에는 정보가 없지만, 일반적인 HR 지식을 바탕으로 정중하고 따뜻하게 안내해줘. 너무 단정짓지 말고, 안내의 형태로 표현해줘.
 """
 )
