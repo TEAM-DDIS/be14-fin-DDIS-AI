@@ -1,11 +1,11 @@
 # chatbot.py
 import os
 from dotenv import load_dotenv
-from langchain.vectorstores import FAISS
+from langchain_community.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.chains import RetrievalQA
-from app.prompts import friendly_policy_prompt
+from prompts import friendly_policy_prompt
 
 load_dotenv()
 
