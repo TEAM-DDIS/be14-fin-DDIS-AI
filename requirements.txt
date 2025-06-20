@@ -13,3 +13,7 @@ pypdf
 requests
 python-dotenv
 sqlalchemy
+
+boto3
+numpy
+pandas

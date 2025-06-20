@@ -1,43 +1,42 @@
-import requests
 import os
+import requests
 
-# 1회성 S3 > pdf 다운로드
+SPRING_DOWNLOAD_API = "http://localhost:8000/s3/download-url"
+SAVE_DIR = "./data/raw_policies"
 
-# PDF 저장 경로
-SAVE_DIR = "data/raw_policies"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-# [OPTIONAL] 인증이 필요한 경우를 위한 주석 처리 (추후 사용 가능)
-# token = "your-jwt-token"
-# headers = {"Authorization": f"Bearer {token}"}
-headers = {}
+# S3에 있는 파일 키
+files = {
+    "hr_policy.pdf": "company-policy/hr_policy.pdf",
+    "salary_regulation.pdf": "company-policy/salary_regulation.pdf",
+    "benefit_guide.pdf": "company-policy/benefit_guide.pdf",
+    "general_rules.pdf": "company-policy/general_rules.pdf",
+    "user_manual.pdf": "company-policy/user_manual.pdf"
+}
 
-def fetch_pdfs():
-    print("Spring API로 파일 목록 요청 중...")
-    response = requests.get("http://localhost:8000/policies/files", headers=headers)
+for filename, s3_key in files.items():
+    try:
+        # Step 1: presigned GET URL 발급
+        res = requests.get(SPRING_DOWNLOAD_API, params={
+            "filename": s3_key,
+            "contentType": "application/pdf"
+        })
 
-    if response.status_code != 200:
-        print(f"요청 실패: {response.status_code} - {response.text}")
-        return
-
-    files = response.json()
-
-    for file in files:
-        filename = file["fileName"]
-        url = file["downloadUrl"]
-        save_path = os.path.join(SAVE_DIR, filename)
-
-        # 이미 다운로드된 파일은 건너뛰기
-        if os.path.exists(save_path):
-            print(f"이미 있음: {filename}")
+        if res.status_code != 200:
+            print(f"[X] Failed to get download URL for {filename}: {res.text}")
             continue
 
-        print(f"⬇다운로드 중: {filename}")
-        r = requests.get(url)
-        with open(save_path, "wb") as f:
-            f.write(r.content)
+        download_url = res.text.strip('"')  # 서버가 문자열만 리턴할 경우
 
-    print("모든 PDF 다운로드 완료!")
+        # Step 2: 파일 다운로드
+        pdf_response = requests.get(download_url)
+        if pdf_response.status_code == 200:
+            with open(os.path.join(SAVE_DIR, filename), 'wb') as f:
+                f.write(pdf_response.content)
+            print(f"[✓] 다운로드 완료: {filename}")
+        else:
+            print(f"[X] 다운로드 실패: {filename} ({pdf_response.status_code})")
 
-if __name__ == "__main__":
-    fetch_pdfs()
+    except Exception as e:
+        print(f"[!] 오류 발생: {filename} → {e}")
